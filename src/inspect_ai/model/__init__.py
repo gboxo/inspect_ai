@@ -50,6 +50,7 @@ from ._model_output import (
     TopLogprob,
 )
 from ._providers.providers import *
+from ._routing import *
 from ._registry import modelapi
 from ._trim import trim_messages
 
