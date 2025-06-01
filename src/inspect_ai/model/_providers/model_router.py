@@ -8,7 +8,7 @@ from openai import APIStatusError
 from typing_extensions import override
 import asyncio
 import time
-
+from inspect_ai.model._registry import modelapi
 from inspect_ai._util.error import PrerequisiteError, pip_dependency_error
 from inspect_ai._util.local_server import (
     configure_devices,
@@ -50,7 +50,7 @@ vllmrouter:
 
 logger = logging.getLogger(__name__)
 
-
+@modelapi(name="vllm_router")   
 class VLLMRouter(ModelAPI):
     """
     Router for managing multiple vLLM models and routing requests between them.
@@ -90,7 +90,15 @@ class VLLMRouter(ModelAPI):
                 f"model_{i}": model for i, model in enumerate(models_config)
             }
         else:
-            raise ValueError("models must be a dict or list")
+            # If no models specified, provide a helpful error message
+            if not models_config:
+                raise ValueError(
+                    f"VLLMRouter requires a 'models' parameter. "
+                    f"Usage: --model vllm_router/config_name -M 'models=[\"model1\", \"model2\"]' "
+                    f"or --model vllm_router/config_name -M 'models={{\"reasoning\": \"model1\", \"non_reasoning\": \"model2\"}}'"
+                )
+            else:
+                raise ValueError("models must be a dict or list")
 
         if not self.model_names:
             raise ValueError("At least one model must be specified")
@@ -154,22 +162,23 @@ class VLLMRouter(ModelAPI):
             )
 
         # Initialize routing procedure
-        routing_config = model_args.get("routing_config", {})
-        router_config = RouterClassConfig(
-            n_models=len(self.models),
-            d_embedding=routing_config.get("d_embedding", 128),
-            text_dim=routing_config.get("text_dim", 1536),
-            embedding_model=routing_config.get(
-                "embedding_model", "text-embedding-3-small"
-            ),
-            use_proj=routing_config.get("use_proj", True),
-        )
-        self.routing_procedure = RouterClass(router_config)
+        if False:
+            routing_config = model_args.get("routing_config", {})
+            router_config = RouterClassConfig(
+                n_models=len(self.models),
+                d_embedding=routing_config.get("d_embedding", 128),
+                text_dim=routing_config.get("text_dim", 1536),
+                embedding_model=routing_config.get(
+                    "embedding_model", "text-embedding-3-small"
+                ),
+                use_proj=routing_config.get("use_proj", True),
+            )
+            self.routing_procedure = RouterClass(router_config)
 
-        # Load router weights if provided
-        router_weights_path = routing_config.get("weights_path")
-        if router_weights_path:
-            self.routing_procedure.load_weights(router_weights_path)
+            # Load router weights if provided
+            router_weights_path = routing_config.get("weights_path")
+            if router_weights_path:
+                self.routing_procedure.load_weights(router_weights_path)
 
     def _extract_query_text(self, messages: list[ChatMessage]) -> str:
         """Extract text content from ChatMessage list for routing."""
@@ -258,12 +267,15 @@ class VLLMRouter(ModelAPI):
         """Generate responses for a batch of inputs by routing each to appropriate models."""
         try:
             # Extract query texts for routing
-            query_texts = [
-                self._extract_query_text(input_msgs) for input_msgs in inputs
-            ]
+            if False:
+                query_texts = [
+                    self._extract_query_text(input_msgs) for input_msgs in inputs
+                ]
 
-            # Route all queries at once
-            model_indices = await self.routing_procedure.forward_batch(query_texts)
+                # Route all queries at once
+                model_indices = await self.routing_procedure.forward_batch(query_texts)
+            else:
+                model_indices = [0] * (len(inputs)//2) + [1] * (len(inputs) - len(inputs)//2)
 
             # Group inputs by selected model for efficient batch processing
             model_batches: dict[str, list[tuple[int, list[ChatMessage]]]] = {}

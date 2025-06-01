@@ -8,10 +8,11 @@ import torch.nn.functional as F
 from typing import List, Optional
 from dataclasses import dataclass
 from huggingface_hub import PyTorchModelHubMixin
+import os
 
 try:
     from openai import OpenAI
-    OPENAI_CLIENT = OpenAI()
+    OPENAI_CLIENT = None  # Initialize lazily
 except ImportError:
     OPENAI_CLIENT = None
 
@@ -38,6 +39,7 @@ class RouterClass(nn.Module, PyTorchModelHubMixin):
         self._name = "AccuracyRouter"
         self.use_proj = config.use_proj
         self.embedding_model = config.embedding_model
+        self._openai_client = None
         
         # Model embeddings
         self.P = nn.Embedding(config.n_models, config.d_embedding)
@@ -55,10 +57,18 @@ class RouterClass(nn.Module, PyTorchModelHubMixin):
         self.classifier = nn.Sequential(
             nn.Linear(config.d_embedding, 1, bias=True)
         )
-        
-        # Initialize OpenAI client if available
-        if OPENAI_CLIENT is None:
-            raise RuntimeError("OpenAI client not available. Please install openai package.")
+    
+    def _get_openai_client(self):
+        """Get OpenAI client, initializing it lazily."""
+        if self._openai_client is None:
+            try:
+                from openai import OpenAI
+                self._openai_client = OpenAI()
+            except ImportError:
+                raise RuntimeError("OpenAI package not available. Please install openai package.")
+            except Exception as e:
+                raise RuntimeError(f"Failed to initialize OpenAI client: {e}")
+        return self._openai_client
     
     def get_device(self):
         """Get the device of the model."""
@@ -67,7 +77,7 @@ class RouterClass(nn.Module, PyTorchModelHubMixin):
     async def _get_embeddings(self, queries: List[str]) -> torch.Tensor:
         """Get embeddings for a batch of queries using OpenAI API."""
         try:
-            response = OPENAI_CLIENT.embeddings.create(
+            response = self._get_openai_client().embeddings.create(
                 model=self.embedding_model,
                 input=queries
             )
@@ -98,7 +108,7 @@ class RouterClass(nn.Module, PyTorchModelHubMixin):
         model_embeds = F.normalize(model_embeds, p=2, dim=1)
         
         # Get prompt embedding
-        prompt_embed = OPENAI_CLIENT.embeddings.create(
+        prompt_embed = self._get_openai_client().embeddings.create(
             input=[prompt], 
             model=self.embedding_model
         ).data[0].embedding
@@ -169,8 +179,10 @@ class RouterClass(nn.Module, PyTorchModelHubMixin):
         return selected_models.tolist()
     
     def load_weights(self, path: str):
-        """Load trained weights from file."""
-        self.load_state_dict(torch.load(path, map_location=self.get_device()))
+        """Load router weights from a file."""
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Router weights file not found: {path}")
+        self.load_state_dict(torch.load(path, map_location=self.get_device(), weights_only=False))
 
 
 
