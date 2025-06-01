@@ -7,6 +7,7 @@ from inspect_ai.model._routing.router_class import RouterClass, RouterClassConfi
 from openai import APIStatusError
 from typing_extensions import override
 import asyncio
+import time
 
 from inspect_ai._util.error import PrerequisiteError, pip_dependency_error
 from inspect_ai._util.local_server import (
@@ -97,22 +98,59 @@ class VLLMRouter(ModelAPI):
         # Extract ports if provided
         ports = model_args.get("ports", None)
         if ports is not None:
-            assert len(self.model_names) == len(ports), (
-                "ports must be provided for each model"
-            )
+            if not isinstance(ports, list) or len(self.model_names) != len(ports):
+                raise ValueError(
+                    "ports must be a list with the same number of elements as models"
+                )
+
+        # Extract the list of server_args for individual models
+        # This comes from the CLI: -M 'server_args=[{"gpu_memory_utilization": 0.1}, {"gpu_memory_utilization": 0.1}]'
+        individual_model_server_args_list = model_args.get("server_args")
 
         logger.info(
-            f"Initializing VLLMRouter with models: {self.model_names} and ports: {ports}"
+            f"Initializing VLLMRouter with models: {self.model_names}, ports: {ports}, and server_args: {individual_model_server_args_list}"
         )
 
         # Initialize VLLM models
         self.models = {}
+        # Get the delay from model_args, defaulting to 0 if not provided
+        # You can pass this via CLI: -M 'server_launch_delay=30'
+        server_launch_delay = model_args.get("server_launch_delay", 0)
 
-        for i, model_name in enumerate(self.model_names):
-            self.models[model_name] = VLLMAPI(
-                model_name=model_name,
-                config=config,
+        for i, model_name_for_vllm_instance in enumerate(self.model_names):
+            # Add a delay before launching subsequent servers
+            if i > 0 and server_launch_delay > 0:
+                logger.info(f"Waiting {server_launch_delay} seconds before launching next vLLM server...")
+                time.sleep(server_launch_delay) # Synchronous sleep
+
+            current_model_specific_args = {}
+            if individual_model_server_args_list:
+                if isinstance(individual_model_server_args_list, list) and i < len(individual_model_server_args_list):
+                    if isinstance(individual_model_server_args_list[i], dict):
+                        current_model_specific_args = individual_model_server_args_list[i]
+                    else:
+                        logger.warning(
+                            f"Item at index {i} in server_args is not a dict. "
+                            f"Using empty server_args for model {model_name_for_vllm_instance}."
+                        )
+                elif isinstance(individual_model_server_args_list, dict):
+                    # Allow a single dict in server_args to apply to all models
+                    current_model_specific_args = individual_model_server_args_list
+                    if i == 0: # Log only once if it's a single dict for all
+                        logger.info(
+                            f"Applying single server_args dict to all models: {current_model_specific_args}"
+                        )
+                else:
+                    logger.warning(
+                        f"server_args is not a list of dicts or a single dict. "
+                        f"Using empty server_args for model {model_name_for_vllm_instance}."
+                    )
+
+            self.models[model_name_for_vllm_instance] = VLLMAPI(
+                model_name=model_name_for_vllm_instance,
+                config=config,  # This is VLLMRouter's GenerateConfig, passed to each VLLMAPI
                 port=ports[i] if ports is not None else None,
+                **current_model_specific_args  # Pass the specific server_args dict for this model
             )
 
         # Initialize routing procedure

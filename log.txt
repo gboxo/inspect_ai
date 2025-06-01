@@ -1,0 +1,101 @@
+[06/01/25 14:43:15] INFO     Initializing VLLMRouter with models: ['Qwen/Qwen2.5-1.5B-Instruct',                                          model_router.py:109
+                             'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B'], ports: [33534, 33535], and server_args:                                           
+                             [{'gpu_memory_utilization': 0.1}, {'gpu_memory_utilization': 0.3}]                                                              
+                    WARNING  Existing vLLM server not found. Starting new server for Qwen/Qwen2.5-1.5B-Instruct.                                   vllm.py:95
+[06/01/25 14:43:17] DEBUG    No plugins for group vllm.platform_plugins found.                                                                 __init__.py:28
+                    DEBUG    Checking if TPU platform is available.                                                                            __init__.py:34
+                    DEBUG    TPU platform is not available because: No module named 'libtpu'                                                   __init__.py:44
+                    DEBUG    Checking if CUDA platform is available.                                                                           __init__.py:51
+                    DEBUG    Confirmed CUDA platform is available.                                                                             __init__.py:71
+                    DEBUG    Checking if ROCm platform is available.                                                                           __init__.py:99
+                    DEBUG    ROCm platform is not available because: No module named 'amdsmi'                                                 __init__.py:113
+                    DEBUG    Checking if HPU platform is available.                                                                           __init__.py:120
+                    DEBUG    HPU platform is not available because habana_frameworks is not found.                                            __init__.py:127
+                    DEBUG    Checking if XPU platform is available.                                                                           __init__.py:137
+                    DEBUG    XPU platform is not available because: No module named 'intel_extension_for_pytorch'                             __init__.py:147
+                    DEBUG    Checking if CPU platform is available.                                                                           __init__.py:154
+                    DEBUG    Checking if Neuron platform is available.                                                                        __init__.py:176
+                    DEBUG    Checking if CUDA platform is available.                                                                           __init__.py:51
+                    DEBUG    Confirmed CUDA platform is available.                                                                             __init__.py:71
+                    INFO     Automatically detected platform cuda.                                                                            __init__.py:243
+[06/01/25 14:43:18] INFO     Launching server on port 30812                                                                               local_server.py:185
+                    INFO     Started server with command: vllm serve Qwen/Qwen2.5-1.5B-Instruct --host 0.0.0.0 --api-key inspectai        local_server.py:133
+                             --gpu-memory-utilization 0.1 --port 30812                                                                                       
+                    INFO     Waiting for server at http://localhost:30812 to become ready...                                              local_server.py:228
+                    DEBUG    connect_tcp.started host='localhost' port=30812 local_address=None timeout=5.0 socket_options=None                  _trace.py:47
+                    DEBUG    connect_tcp.failed exception=ConnectError(ConnectionRefusedError(111, 'Connection refused'))                        _trace.py:47
+                    DEBUG    Server check failed: [Errno 111] Connection refused, retrying...                                             local_server.py:267
+[06/01/25 14:43:19] DEBUG    connect_tcp.started host='localhost' port=30812 local_address=None timeout=5.0 socket_options=None                  _trace.py:47
+                    DEBUG    connect_tcp.failed exception=ConnectError(ConnectionRefusedError(111, 'Connection refused'))                        _trace.py:47
+                    DEBUG    Server check failed: [Errno 111] Connection refused, retrying...                                             local_server.py:267
+[06/01/25 14:43:20] DEBUG    connect_tcp.started host='localhost' port=30812 local_address=None timeout=5.0 socket_options=None                  _trace.py:47
+                    DEBUG    connect_tcp.failed exception=ConnectError(ConnectionRefusedError(111, 'Connection refused'))                        _trace.py:47
+                    DEBUG    Server check failed: [Errno 111] Connection refused, retrying...                                             local_server.py:267
+                    INFO     Traceback (most recent call last):                                                                           local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/bin/vllm", line 5, in <module>                                     local_server.py:124
+                    INFO     from vllm.entrypoints.cli.main import main                                                                   local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/__init__.py", line 12, in        local_server.py:124
+                             <module>                                                                                                                        
+                    INFO     from vllm.engine.arg_utils import AsyncEngineArgs, EngineArgs                                                local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/engine/arg_utils.py", line 20,   local_server.py:124
+                             in <module>                                                                                                                     
+                    INFO     from vllm.config import (BlockSize, CacheConfig, CacheDType, CompilationConfig,                              local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/config.py", line 32, in <module> local_server.py:124
+                    INFO     from vllm.model_executor.layers.quantization import (QUANTIZATION_METHODS,                                   local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/model_executor/__init__.py",     local_server.py:124
+                             line 3, in <module>                                                                                                             
+                    INFO     from vllm.model_executor.parameter import (BasevLLMParameter,                                                local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/model_executor/parameter.py",    local_server.py:124
+                             line 9, in <module>                                                                                                             
+                    INFO     from vllm.distributed import get_tensor_model_parallel_rank                                                  local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/distributed/__init__.py", line   local_server.py:124
+                             3, in <module>                                                                                                                  
+                    INFO     from .communication_op import *                                                                              local_server.py:124
+                    INFO     File                                                                                                         local_server.py:124
+                             "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/distributed/communication_op.py",                        
+                             line 8, in <module>                                                                                                             
+                    INFO     from .parallel_state import get_tp_group                                                                     local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/distributed/parallel_state.py",  local_server.py:124
+                             line 149, in <module>                                                                                                           
+                    INFO     from vllm.platforms import current_platform                                                                  local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/platforms/__init__.py", line 11, local_server.py:124
+                             in <module>                                                                                                                     
+                    INFO     from .interface import _Backend  # noqa: F401                                                                local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/platforms/interface.py", line    local_server.py:124
+                             12, in <module>                                                                                                                 
+                    INFO     from vllm.inputs import ProcessorInputs, PromptType                                                          local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/inputs/__init__.py", line 8, in  local_server.py:124
+                             <module>                                                                                                                        
+                    INFO     from .registry import (DummyData, InputContext, InputProcessingContext,                                      local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/inputs/registry.py", line 10, in local_server.py:124
+                             <module>                                                                                                                        
+                    INFO     from vllm.transformers_utils.tokenizer import AnyTokenizer                                                   local_server.py:124
+                    INFO     File                                                                                                         local_server.py:124
+                             "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/vllm/transformers_utils/tokenizer.py",                        
+                             line 13, in <module>                                                                                                            
+                    INFO     from transformers import (AutoTokenizer, PreTrainedTokenizer,                                                local_server.py:124
+                    INFO     File "<frozen importlib._bootstrap>", line 1075, in _handle_fromlist                                         local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/transformers/utils/import_utils.py",  local_server.py:124
+                             line 2045, in __getattr__                                                                                                       
+                    INFO     module = self._get_module(self._class_to_module[name])                                                       local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/transformers/utils/import_utils.py",  local_server.py:124
+                             line 2073, in _get_module                                                                                                       
+                    INFO     return importlib.import_module("." + module_name, self.__name__)                                             local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/importlib/__init__.py", line 126, in import_module  local_server.py:124
+                    INFO     return _bootstrap._gcd_import(name[level:], package, level)                                                  local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/transformers/models/__init__.py",     local_server.py:124
+                             line 341, in <module>                                                                                                           
+                    INFO     sys.modules[__name__] = _LazyModule(__name__, _file, define_import_structure(_file), module_spec=__spec__)   local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/transformers/utils/import_utils.py",  local_server.py:124
+                             line 2594, in define_import_structure                                                                                           
+                    INFO     import_structure = create_import_structure_from_path(module_path)                                            local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/transformers/utils/import_utils.py",  local_server.py:124
+                             line 2307, in create_import_structure_from_path                                                                                 
+                    INFO     import_structure[f] = create_import_structure_from_path(os.path.join(module_path, f))                        local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/transformers/utils/import_utils.py",  local_server.py:124
+                             line 2430, in create_import_structure_from_path                                                                                 
+                    INFO     for _all_object in fetch__all__(file_content):                                                               local_server.py:124
+                    INFO     File "/home/ubuntu/anaconda3/envs/my_venv/lib/python3.10/site-packages/transformers/utils/import_utils.py",  local_server.py:124
+                             line 2212, in fetch__all__                                                                                                      
+                    INFO     if line.startswith("__all__"):                                                                               local_server.py:124
+                    INFO     KeyboardInterrupt                                                                                            local_server.py:124
